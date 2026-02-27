@@ -87,6 +87,7 @@ class CodeExecutionController extends Controller
             $clientSecret = env('JDOODLE_CLIENT_SECRET');
 
             if (!$clientId || !$clientSecret) {
+                Log::debug('JDoodle credentials not configured');
                 return null;
             }
 
@@ -112,10 +113,15 @@ class CodeExecutionController extends Controller
                 ]);
             }
 
+            Log::debug('JDoodle API error', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
             return null;
         } catch (\Exception $e) {
             Log::debug('JDoodle failed, will try fallback', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             return null;
         }
@@ -141,8 +147,15 @@ class CodeExecutionController extends Controller
                 return response()->json($response->json());
             }
 
+            Log::debug('Glot API error', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
             return null;
         } catch (\Exception $e) {
+            Log::debug('Glot request failed', [
+                'error' => $e->getMessage()
+            ]);
             return null;
         }
     }

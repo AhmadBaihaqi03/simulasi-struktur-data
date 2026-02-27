@@ -271,7 +271,24 @@ Test JDoodle connectivity dulu
                     body: JSON.stringify({ code: codeContent })
                 });
 
-                const data = await response.json();
+                // Check HTTP status first
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    outputBox.innerText = `ERROR: HTTP ${response.status}\n${errorText}`;
+                    outputBox.style.color = "#f87171";
+                    console.error(`HTTP Error ${response.status}:`, errorText);
+                    return;
+                }
+
+                let data;
+                try {
+                    data = await response.json();
+                } catch (parseError) {
+                    outputBox.innerText = "ERROR: Invalid server response\n" + await response.text();
+                    outputBox.style.color = "#f87171";
+                    console.error('JSON parse error:', parseError);
+                    return;
+                }
 
                 // Check if demo mode
                 if (data._mode === 'demo') {
@@ -294,9 +311,9 @@ Test JDoodle connectivity dulu
                     outputBox.style.color = "#94a3b8";
                 }
             } catch (error) {
-                outputBox.innerText = "Error: " + error.message;
+                outputBox.innerText = "Failed to fetch: " + error.message + "\n\nPastikan server sedang berjalan dan kode C valid.";
                 outputBox.style.color = "#f87171";
-                console.error(error);
+                console.error('Fetch error:', error);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bi bi-play-circle-fill me-2"></i> JALANKAN KODE';
