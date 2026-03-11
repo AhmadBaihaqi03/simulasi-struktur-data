@@ -1,23 +1,45 @@
 <x-app-layout>
     <style>
         body { background-color: #f8f9fa; }
-        .card-stat { border-radius: 15px; border: none; min-height: 75px; }
+        .card-stat { border-radius: 15px; border: none; min-height: 75px; transition: transform 0.2s; }
+        .card-stat:hover { transform: translateY(-3px); }
         .text-indigo { color: #5c60f5; }
         .bg-indigo { background-color: #5c60f5; }
-        .btn-indigo { background-color: #5c60f5; color: white; border-radius: 20px; padding: 10px 25px; }
-        .btn-indigo:hover { background-color: #4a4ed4; color: white; }
+        .btn-indigo { background-color: #5c60f5; color: white; border-radius: 20px; padding: 10px 25px; transition: 0.3s; }
+        .btn-indigo:hover { background-color: #4a4ed4; color: white; box-shadow: 0 4px 12px rgba(92, 96, 245, 0.3); }
         .status-badge { border-radius: 20px; padding: 5px 15px; font-size: 0.75rem; font-weight: bold; }
-        .action-icon { color: #8a8da3; transition: 0.3s; border: none; background: none; padding: 0; }
-        .action-icon:hover { color: #5c60f5; transform: scale(1.1); }
-        .banner-new { background: linear-gradient(90deg, #5c60f5 0%, #3f42b5 100%); border-radius: 20px; color: white; }
+        
+        /* Custom Styling for Action Buttons */
+        .btn-action-custom { 
+            border-radius: 12px; 
+            width: 40px; 
+            height: 40px; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .btn-outline-indigo { color: #5c60f5; border: 1.5px solid #5c60f5; background: transparent; }
+        .btn-outline-indigo:hover { background-color: #5c60f5; color: white; }
+
+        /* Pagination Styling */
+        .pagination-wrapper nav svg { width: 20px; }
+        .pagination-wrapper .relative.z-0.inline-flex { border-radius: 10px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     </style>
 
     <div class="container py-5">
         @if(session('success'))
-            <div class="alert alert-success border-0 shadow-sm mb-4 alert-dismissible fade show" style="border-radius: 15px;">
+            <div x-data="{ show: true }" 
+                 x-show="show" 
+                 x-init="setTimeout(() => show = false, 3000)"
+                 x-transition:leave="transition ease-in duration-500"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="alert alert-success border-0 shadow-sm mb-4 alert-dismissible fade show" 
+                 style="border-radius: 15px;">
                 <i class="bi bi-check-circle-fill me-2"></i>
                 {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" @click="show = false" aria-label="Close"></button>
             </div>
         @endif
         
@@ -36,27 +58,24 @@
                     <h1 class="fw-bold mt-2 mb-0 display-6 text-indigo">{{ sprintf('%02d', $stats['pending']) }}</h1>
                 </div>
             </div>
-
             <div class="col-md-4">
                 <div class="card card-stat shadow-sm p-3 border-0">
                     <div class="d-flex justify-content-between text-muted small fw-bold">
                         <span>GRADED GROUPS</span>
                         <i class="bi bi-check-all text-success"></i>
                     </div>
-                    <h1 class="fw-bold mt-2 mb-0 display-6 text-indigo">{{ sprintf('%02d', $stats['graded'] ?? 0) }}</h1>
+                    <h1 class="fw-bold mt-2 mb-0 display-6 text-indigo">{{ sprintf('%02d', $stats['graded']) }}</h1>
                 </div>
             </div>
-
             <div class="col-md-4">
                 <div class="card card-stat shadow-sm p-3 border-0">
                     <div class="d-flex justify-content-between text-muted small fw-bold">
                         <span>TOTAL GROUPS</span>
                         <i class="bi bi-people text-primary"></i>
                     </div>
-                    <h1 class="fw-bold mt-2 mb-0 display-6 text-indigo">{{ sprintf('%02d', $stats['total_groups'] ?? 0) }}</h1>
+                    <h1 class="fw-bold mt-2 mb-0 display-6 text-indigo">{{ sprintf('%02d', $stats['total_groups']) }}</h1>
                 </div>
             </div>
-
             <div class="col-md-4">
                 <div class="card card-stat shadow-sm p-3 border-0">
                     <div class="d-flex justify-content-between text-muted small fw-bold">
@@ -66,7 +85,6 @@
                     <h1 class="fw-bold mt-2 mb-0 display-6 text-indigo">{{ sprintf('%02d', $stats['active']) }}</h1>
                 </div>
             </div>
-
             <div class="col-md-4">
                 <div class="card card-stat shadow-sm p-3 border-0">
                     <div class="d-flex justify-content-between text-muted small fw-bold">
@@ -76,7 +94,6 @@
                     <h1 class="fw-bold mt-2 mb-0 display-6 text-indigo">{{ sprintf('%02d', $stats['total'] - $stats['active']) }}</h1>
                 </div>
             </div>
-
             <div class="col-md-4">
                 <div class="card card-stat shadow-sm p-3 border-0">
                     <div class="d-flex justify-content-between text-muted small fw-bold">
@@ -91,16 +108,11 @@
         <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
             <div class="card-body p-4">
                 <div class="d-flex align-items-center justify-content-between mb-4 gap-3">
-                    
                     <div class="input-group shadow-sm flex-grow-1" style="border-radius: 12px; overflow: hidden;">
                         <span class="input-group-text bg-white border-0 ps-3">
                             <i class="bi bi-search text-indigo"></i>
                         </span>
-                        <input type="text" 
-                            id="searchInput"
-                            class="form-control bg-white border-0 py-2 fw-medium text-indigo" 
-                            placeholder="Cari berdasarkan nama atau kode sesi..."
-                            style="box-shadow: none;">
+                        <input type="text" id="searchInput" class="form-control bg-white border-0 py-2 fw-medium text-indigo" placeholder="Cari berdasarkan nama atau kode sesi..." style="box-shadow: none;">
                     </div>
 
                     <div class="flex-shrink-0">
@@ -132,18 +144,9 @@
                                     <span class="badge bg-light text-dark border px-2 py-1 font-monospace session-code">{{ $session->session_code }}</span>
                                 </td>
                                 <td>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-muted small">
-                                            <i class="bi bi-people me-1"></i> {{ $session->groups->count() }} Groups
-                                        </span>
-                                        @if($session->pending_evaluations_count > 0)
-                                            <div class="mt-1">
-                                                <span class="badge rounded-pill bg-danger shadow-sm" style="font-size: 0.65rem;">
-                                                    {{ $session->pending_evaluations_count }} Need Grading
-                                                </span>
-                                            </div>
-                                        @endif
-                                    </div>
+                                    <span class="text-muted small">
+                                        <i class="bi bi-people me-1"></i> {{ $session->groups_count ?? $session->groups->count() }} Groups
+                                    </span>
                                 </td>
                                 <td>
                                     @if($session->is_active)
@@ -156,19 +159,27 @@
                                     <div class="d-flex justify-content-end align-items-center gap-2">
                                         <form action="{{ route('sessions.toggle', $session) }}" method="POST" class="m-0">
                                             @csrf @method('PATCH')
-                                            <button type="submit" class="btn btn-sm shadow-sm d-flex align-items-center justify-content-center {{ $session->is_active ? 'btn-success' : 'btn-secondary' }}" style="border-radius: 8px; width: 38px; height: 38px;">
+                                            <button type="submit" class="btn btn-sm btn-action-custom shadow-sm {{ $session->is_active ? 'btn-success' : 'btn-secondary' }}" title="Toggle Active">
                                                 <i class="bi {{ $session->is_active ? 'bi-toggle-on' : 'bi-toggle-off' }} fs-5"></i>
                                             </button>
                                         </form>
-                                        <a href="{{ route('sessions.evaluations', $session) }}" class="btn btn-sm shadow-sm d-flex align-items-center justify-content-center {{ $session->pending_evaluations_count > 0 ? 'btn-primary text-white' : 'btn-outline-primary' }}" style="border-radius: 8px; width: 38px; height: 38px;">
+
+                                        <a href="{{ route('sessions.evaluations', $session) }}" class="btn btn-sm btn-action-custom btn-outline-indigo position-relative shadow-sm" title="Grading">
                                             <i class="bi bi-mortarboard-fill fs-5"></i>
+                                            @if($session->pending_evaluations_count > 0)
+                                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="font-size: 0.65rem;">
+                                                    {{ $session->pending_evaluations_count }}
+                                                </span>
+                                            @endif
                                         </a>
-                                        <a href="{{ route('sessions.edit', $session) }}" class="btn btn-sm btn-outline-warning shadow-sm d-flex align-items-center justify-content-center" style="border-radius: 8px; width: 38px; height: 38px;">
+
+                                        <a href="{{ route('sessions.edit', $session) }}" class="btn btn-sm btn-action-custom btn-outline-warning shadow-sm" title="Edit">
                                             <i class="bi bi-pencil-fill fs-6"></i>
                                         </a>
+
                                         <form action="{{ route('sessions.destroy', $session) }}" method="POST" class="m-0" onsubmit="return confirm('Hapus sesi ini?')">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger shadow-sm d-flex align-items-center justify-content-center" style="border-radius: 8px; width: 38px; height: 38px;">
+                                            <button type="submit" class="btn btn-sm btn-action-custom btn-outline-danger shadow-sm" title="Delete">
                                                 <i class="bi bi-trash3-fill fs-6"></i>
                                             </button>
                                         </form>
@@ -183,6 +194,15 @@
                         </tbody>
                     </table>
                 </div>
+
+                <div class="mt-4 pagination-wrapper d-flex justify-content-between align-items-center px-2">
+                    <div class="text-muted small">
+                        Showing {{ $sessions->firstItem() ?? 0 }} to {{ $sessions->lastItem() ?? 0 }} of {{ $sessions->total() }} entries
+                    </div>
+                    <div>
+                        {{ $sessions->links() }}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -193,11 +213,9 @@
             let rows = document.querySelectorAll('#sessionTable tbody tr');
 
             rows.forEach(row => {
-                // Kita ambil teks dari judul sesi dan kode sesi
                 let title = row.querySelector('.session-title')?.textContent.toLowerCase() || "";
                 let code = row.querySelector('.session-code')?.textContent.toLowerCase() || "";
-                    
-                // Jika salah satu mengandung kata kunci, tampilkan barisnya
+                
                 if (title.includes(filter) || code.includes(filter)) {
                     row.style.display = "";
                 } else {

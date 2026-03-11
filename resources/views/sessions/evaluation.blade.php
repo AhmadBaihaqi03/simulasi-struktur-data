@@ -4,86 +4,155 @@
         .text-indigo { color: #5c60f5; }
         .card-custom { border-radius: 15px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .table-hover tbody tr:hover { background-color: #f8fafc; transition: 0.2s; }
-        .progress-custom { height: 8px; border-radius: 10px; background-color: #e2e8f0; }
-        .progress-bar-custom { background-color: #5c60f5; border-radius: 10px; }
+        
+        /* Box Kode Sesi yang lebih manis */
+        .session-code-box {
+            background-color: #ffffff;
+            border: 2px dashed #5c60f5;
+            border-radius: 10px;
+            padding: 4px 15px;
+            display: inline-block;
+        }
+
+        /* Opsi 2: Dedicated Search Row */
+        .filter-row {
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        .search-wrapper-full {
+            position: relative;
+            flex-grow: 1;
+        }
+        .search-wrapper-full i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+        }
+        .search-input-full {
+            padding-left: 45px;
+            height: 45px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .search-input-full:focus {
+            border-color: #5c60f5;
+            box-shadow: 0 0 0 4px rgba(92, 96, 245, 0.1);
+            background-color: #fff;
+        }
     </style>
 
-    <div class="container py-5" style="max-width: 1000px;">
+    <div class="container py-5" style="max-width: 900px;">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <a href="{{ route('dashboard') }}" class="text-muted text-decoration-none mb-2 d-inline-block">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
-                </a>
                 <h2 class="fw-bold text-indigo mb-0">Evaluation Panel</h2>
-                <p class="text-muted">Session: <strong>{{ $session->title }}</strong></p>
+                <p class="text-muted mb-0">Session: <span class="text-dark fw-semibold">{{ $session->title }}</span></p>
             </div>
             <div class="text-end">
-                <span class="d-block text-muted small text-uppercase fw-bold">Session Code</span>
-                <h3 class="fw-bold text-dark font-monospace mb-0 border px-3 py-1 rounded bg-white shadow-sm">
-                    {{ $session->session_code }}
-                </h3>
+                <span class="d-block text-muted small text-uppercase fw-bold mb-1" style="font-size: 0.7rem;">Session Code</span>
+                <div class="session-code-box shadow-sm">
+                    <h4 class="fw-bold text-indigo font-monospace mb-0" style="letter-spacing: 1px;">
+                        {{ $session->session_code }}
+                    </h4>
+                </div>
             </div>
         </div>
 
         <div class="card card-custom p-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="fw-bold mb-0"><i class="bi bi-people text-indigo me-2"></i>Student Groups</h5>
-                <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">Total: {{ $session->groups->count() }} Groups</span>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-people-fill text-indigo me-2"></i>Daftar Kelompok Mahasiswa
+                </h5>
+                <span class="badge bg-indigo bg-opacity-10 text-indigo px-3 py-2 rounded-pill fw-bold">
+                    {{ $groups->count() }} Kelompok Terdaftar
+                </span>
             </div>
 
-            @if($session->groups->count() > 0)
+            <div class="filter-row">
+                <div class="search-wrapper-full">
+                    <i class="bi bi-search fs-5"></i>
+                    <input type="text" id="groupSearch" class="form-control search-input-full" placeholder="Ketik nama kelompok untuk mencari dengan cepat...">
+                </div>
+            </div>
+
+            @if($groups->count() > 0)
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="text-muted small text-uppercase" style="background-color: #f8fafc;">
+                    <table class="table table-hover align-middle mb-0" id="groupTable">
+                        <thead class="text-muted small text-uppercase">
                             <tr>
-                                <th class="py-3 px-4 rounded-start" style="width: 30%;">Group Name</th>
-                                <th class="py-3" style="width: 30%;">Learning Progress</th>
-                                <th class="py-3" style="width: 20%;">Grading Status</th>
-                                <th class="py-3 text-end rounded-end px-4" style="width: 20%;">Action</th>
+                                <th class="py-3 px-4 border-0" style="width: 45%;">Nama Kelompok</th>
+                                <th class="py-3 border-0" style="width: 30%;">Status Penilaian</th>
+                                <th class="py-3 text-end border-0 px-4" style="width: 25%;">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($session->groups as $group)
-                            <tr>
-                                <td class="px-4 py-3">
-                                    <div class="fw-bold text-dark">{{ $group->group_name }}</div>
-                                    <small class="text-muted">Joined: {{ $group->created_at->format('d M Y') }}</small>
+                            @foreach($groups as $group)
+                            <tr class="group-row border-top">
+                                <td class="px-4 py-3 border-0">
+                                    <div class="fw-bold text-dark group-name">{{ $group->group_name }}</div>
+                                    <small class="text-muted">ID: #{{ str_pad($group->id, 4, '0', STR_PAD_LEFT) }}</small>
                                 </td>
-                                <td>
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="progress progress-custom flex-grow-1">
-                                            {{-- Progress dihitung dari current_phase (1-5) --}}
-                                            <div class="progress-bar progress-bar-custom" role="progressbar" style="width: {{ ($group->current_phase / 5) * 100 }}%"></div>
-                                        </div>
-                                        <small class="text-muted fw-bold">Phase {{ $group->current_phase }}/5</small>
-                                    </div>
-                                </td>
-                                <td>
+                                <td class="border-0">
                                     @if($group->evaluation)
-                                        <span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-1 rounded-pill">Score: {{ $group->evaluation->score }}</span>
+                                        <div class="d-flex align-items-center text-success fw-bold">
+                                            <i class="bi bi-check-circle-fill me-2"></i>
+                                            <span>Sudah Diberi Feedback</span>
+                                            {{--  <span>Skor: {{ $group->evaluation->score }}</span> --}}
+                                        </div>
                                     @else
-                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning px-2 py-1 rounded-pill">Needs Grading</span>
+                                        <div class="d-flex align-items-center text-warning fw-bold">
+                                            <i class="bi bi-hourglass-split me-2"></i>
+                                            <span>Menunggu Feedback</span>
+                                        </div>
                                     @endif
                                 </td>
-                                <td class="text-end px-4">
-                                    <a href="{{ route('groups.work', $group->id) }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
-                                        <i class="bi bi-eye me-1"></i> View Work
+                                <td class="text-end px-4 border-0">
+                                    <a href="{{ route('groups.work', $group->id) }}" class="btn btn-indigo btn-sm rounded-pill px-4 shadow-sm fw-bold">
+                                        Buka Tugas <i class="bi bi-arrow-right ms-1"></i>
                                     </a>
                                 </td>
                             </tr>
                             @endforeach
+                            <tr id="noResults" style="display: none;">
+                                <td colspan="3" class="text-center py-5">
+                                    <i class="bi bi-search text-muted mb-2 d-block" style="font-size: 2rem;"></i>
+                                    <span class="text-muted">Maaf, kelompok dengan nama tersebut tidak ditemukan.</span>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             @else
                 <div class="text-center py-5">
-                    <div class="mb-3">
-                        <i class="bi bi-person-plus text-muted" style="font-size: 4rem; opacity: 0.5;"></i>
-                    </div>
-                    <h5 class="fw-bold">No Groups Registered</h5>
-                    <p class="text-muted mb-4">Give code <strong class="text-dark">{{ $session->session_code }}</strong> to your students.</p>
+                    <p class="text-muted">Belum ada aktivitas kelompok di sesi ini.</p>
                 </div>
             @endif
         </div>
     </div>
+
+    <script>
+        document.getElementById('groupSearch').addEventListener('keyup', function() {
+            let filter = this.value.toLowerCase();
+            let rows = document.querySelectorAll('.group-row');
+            let hasResults = false;
+
+            rows.forEach(row => {
+                let name = row.querySelector('.group-name').textContent.toLowerCase();
+                if (name.includes(filter)) {
+                    row.style.display = "";
+                    hasResults = true;
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            document.getElementById('noResults').style.display = hasResults ? "none" : "";
+        });
+    </script>
 </x-app-layout>

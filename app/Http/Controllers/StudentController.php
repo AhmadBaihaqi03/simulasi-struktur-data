@@ -8,17 +8,7 @@ use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
-    /**
-     * Tampilan awal untuk input Kode Sesi
-     */
-    public function showJoinForm()
-    {
-        return view('student.JoinSesi');
-    }
-
-    /**
-     * Validasi Kode Sesi dari Guru
-     */
+    //Validasi Kode Sesi dari Guru
     public function checkSession(Request $request)
     {
         $request->validate([
@@ -26,14 +16,26 @@ class StudentController extends Controller
         ]);
 
         $session = Session::where('session_code', strtoupper($request->session_code))
-                             ->where('is_active', true)
-                             ->first();
+                            ->where('is_active', true)
+                            ->first();
 
         if (!$session) {
             return back()->with('error', 'Kode sesi tidak valid atau sudah dinonaktifkan oleh Guru.');
         }
+        //ini ke halaman lama pakai bootstrap
+        //return redirect()->route('student.phase1', $session->session_code);
+        //ini coba kuganti ke halaman baru pakai tailwind
+        return redirect()->route('student.orientasi', $session->session_code);
+    }
 
-        return redirect()->route('student.phase1', $session->session_code);
+    // menampilkan halaman orientasi yang baru
+    public function showOrientasi($session_code)
+    {
+        $session = Session::where('session_code', $session_code)
+                             ->where('is_active', true)
+                             ->firstOrFail();
+
+        return view('student.orientasi', compact('session'));
     }
 
     /**
@@ -48,9 +50,7 @@ class StudentController extends Controller
         return view('student.fase1', compact('session'));
     }
 
-    /**
-     * Membuat Grup Baru atau Masuk ke Grup Lama (Resume)
-     */
+    // Membuat Grup Baru atau Masuk ke Grup Lama (Resume)
     public function joinGroup(Request $request, $session_code)
     {
         $session = Session::where('session_code', $session_code)->firstOrFail();
@@ -59,17 +59,21 @@ class StudentController extends Controller
             'group_name' => 'required|string|max:100',
         ]);
 
-        // Logic: Cari yang sudah ada (Resume) atau Buat Baru
         $group = StudentGroup::firstOrCreate(
             [
                 'session_id' => $session->id,
                 'group_name' => strtoupper($request->group_name)
             ],
             [
-                'current_phase' => 3, // Start di Fase 3 setelah baca narasi
+                'current_phase' => 3, 
                 'student_data' => []
             ]
         );
+
+        // Jika murid mencoba login kembali padahal sudah submit, langsung ke halaman complete
+        if ($group->is_submitted) {
+            return redirect()->route('student.complete', [$session->session_code, $group->id]);
+        }
 
         $targetPhase = ($group->wasRecentlyCreated) ? 3 : $group->current_phase;
 
@@ -80,9 +84,7 @@ class StudentController extends Controller
         ]);
     }
 
-    /**
-     * Menampilkan Fase (3, 4, atau 5) dengan data pertanyaan dari Session
-     */
+    // Menampilkan Fase (Workspace Utama)
     public function showPhase($session_code, $group_id, $phase)
     {
         $session = Session::where('session_code', $session_code)->firstOrFail();
@@ -90,82 +92,77 @@ class StudentController extends Controller
                              ->where('session_id', $session->id)
                              ->firstOrFail();
 
+        // PROTEKSI: Jika sudah submit, tidak boleh edit lagi
+        if ($group->is_submitted) {
+            return redirect()->route('student.complete', [$session_code, $group->id]);
+        }
+
         // Security: Mencegah lompat fase lewat URL
         if ($phase > $group->current_phase) {
             return redirect()->route('student.phase', [$session_code, $group->id, $group->current_phase]);
         }
 
-        // Logic Mirroring: Ambil pertanyaan yang sesuai dengan fase dari kolom array di tabel sessions
         $questions = [];
         if ($phase == 3) {
-            $questions = $session->f3_questions; // Diambil dari array f3_questions di pbl_sessions
+            $questions = $session->f3_questions;
         } elseif ($phase == 5) {
-            $questions = $session->f5_questions; // Diambil dari array f5_questions di pbl_sessions
+            $questions = $session->f5_questions;
         }
 
-        return view("student.fasekeseluruhan", compact('session', 'group', 'questions'));
+        //halaman lama pakai bootstrap
+        //return view("student.fasekeseluruhan", compact('session', 'group', 'questions'));
+        //halaman baru pakai tailwind
+        return view("student.workspace", compact('session', 'group', 'questions'));
     }
 
-    /**
-     * Menyimpan progres jawaban murid per fase
-     */
-    public function savePhase(Request $request, $session_code, $group_id, $phase)
-    {
-        $group = StudentGroup::findOrFail($group_id);
-
-        if ($phase == 3) {
-            // Simpan ke kolom f3_answers (otomatis jadi JSON karena casting di model)
-            $group->update([
-                'f3_answers' => $request->answers,
-                'current_phase' => 4
-            ]);
-        } 
-        elseif ($phase == 4) {
-            $group->update([
-                'f4_description' => $request->f4_description,
-                'f4_code' => $request->f4_code,
-                'current_phase' => 5
-            ]);
-        } 
-        elseif ($phase == 5) {
-            $group->update([
-                'f5_answers' => $request->answers,
-                'is_submitted' => true
-            ]);
-            
-            return redirect()->route('student.complete', [$session_code, $group->id]);
-        }
-
-        return redirect()->route('student.phase', [$session_code, $group->id, $group->current_phase]);
-    }
-
-    public function complete($session_code, $group_id)
-    {
-        return view('student.complete', compact('session_code', 'group_id'));
-    }
-
+    // Menyimpan semua data (Save & Submit)
     public function saveAll(Request $request, $session_code, $group_id)
     {
         $group = StudentGroup::findOrFail($group_id);
 
-        // Update data termasuk anggota kelompok di Fase 2
+        // Update data dasar
         $group->update([
             'f3_answers' => $request->f3_answers,
             'f4_code' => $request->f4_code,
             'f4_answers' => $request->f4_answers,
             'f5_answers' => $request->f5_answers,
-            // Simpan members ke dalam student_data agar rapi
             'student_data' => [
                 'members' => $request->members,
-                // Jika ada data student_data lain, gabungkan di sini
             ]
         ]);
 
+        // Jika aksi tombol adalah 'submit'
         if ($request->action == 'submit') {
-            $group->update(['is_submitted' => true]);
-            return redirect()->route('student.complete', [$session_code, $group->id]);
+            $group->update([
+                'is_submitted' => true,
+                'current_phase' => 5 // Pastikan di database tercatat sampai fase akhir
+            ]);
+
+            return redirect()->route('student.complete', [$session_code, $group->id])
+                             ->with('success', 'Tugas berhasil dikirim!');
         }
 
-        return back()->with('success', 'Data kelompok dan progres berhasil disimpan!');
+        return back()->with('success', 'Progres berhasil disimpan!');
+    }
+
+    // Halaman sukses setelah submit
+    public function complete($session_code, $group_id)
+    {
+        // 1. Ambil data Session berdasarkan kodenya
+        $session = \App\Models\Session::where('session_code', $session_code)->firstOrFail();
+
+        // 2. Ambil data Group beserta evaluasinya (Eager Loading agar tidak berat)
+        $group = \App\Models\StudentGroup::with('evaluation')->findOrFail($group_id);
+
+        // 3. Pastikan group memang sudah submit
+        if (!$group->is_submitted) {
+            return redirect()->route('student.phase', [$session_code, $group->id, $group->current_phase]);
+        }
+
+    // 4. Lempar variabel $session ke view (Sangat Penting!)
+    // halaman lama dengan bootstrap
+    // return view('student.complete', compact('session', 'group'));
+    // halaman baru dengan tailwind
+    return view('student.viewfeedback', compact('session', 'group'));
     }
 }

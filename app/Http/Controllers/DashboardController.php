@@ -5,47 +5,95 @@ namespace App\Http\Controllers;
 use App\Models\Session;
 use App\Models\StudentGroup;
 use Illuminate\Support\Facades\Auth;
+//use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+    /**
+     * Menampilkan halaman utama dashboard instruktur.
+     */
     public function index()
     {
         $user = Auth::user();
-        
-        // 1. Ambil data sesi untuk tabel (Eager Loading count agar tidak lambat)
+
+        // 1. Ambil data sesi untuk tabel
+        // withCount akan otomatis membuat atribut: groups_count & pending_evaluations_count
         $sessions = Session::where('user_id', $user->id)
-            ->withCount('groups')
-            ->latest()
-            ->get();
+        ->withCount([
+            'groups' => function($query) {
+                $query->where('is_submitted', true);
+            }, 
+            // Menghitung grup yang sudah submit tapi belum ada di tabel evaluations
+            'groups as pending_evaluations_count' => function($query) {
+                $query->where('is_submitted', true)
+                      ->whereDoesntHave('evaluation');
+            }
+        ])
+        ->latest()
+        ->paginate(10);
 
-        // 2. Hitung statistik untuk 6 Card
+        // 2. Hitung statistik untuk 6 Card Utama
         $stats = [
-            // Baris Sesi
-            'total'  => $sessions->count(),
-            'active' => $sessions->where('is_active', true)->count(),
-            
-            // Baris Grup & Evaluasi
-            // Total semua grup yang ada di bawah naungan guru ini
-            'total_groups' => StudentGroup::whereHas('session', function($query) use ($user) {
-                                $query->where('user_id', $user->id);
-                             })->count(),
+        // Statistik Sesi
+        'total'        => Session::where('user_id', $user->id)->count(),
+        'active'       => Session::where('user_id', $user->id)->where('is_active', true)->count(),
+        
+        // Statistik Grup (Global) - Update: Hanya menghitung yang sudah submit
+        'total_groups' => StudentGroup::whereHas('session', function($q) use ($user) {
+                            $q->where('user_id', $user->id);
+                         })
+                         ->where('is_submitted', true) // Tambahan filter
+                         ->count(),
 
-            // Kelompok yang sudah submit TAPI belum dinilai
-            'pending' => StudentGroup::whereHas('session', function($query) use ($user) {
-                                $query->where('user_id', $user->id);
-                             })
-                             ->where('is_submitted', true)
-                             ->whereDoesntHave('evaluation') // Asumsi relasi ke tabel penilaian namanya 'evaluation'
-                             ->count(),
+        // Total grup yang butuh dinilai (Global)
+        'pending'      => StudentGroup::whereHas('session', function($q) use ($user) {
+                            $q->where('user_id', $user->id);
+                         })
+                         ->where('is_submitted', true)
+                         ->whereDoesntHave('evaluation')
+                         ->count(),
 
-            // Kelompok yang sudah selesai dinilai
-            'graded' => StudentGroup::whereHas('session', function($query) use ($user) {
-                                $query->where('user_id', $user->id);
-                             })
-                             ->whereHas('evaluation')
-                             ->count(),
+        // Total grup yang sudah selesai dinilai (Global)
+        'graded'       => StudentGroup::whereHas('session', function($q) use ($user) {
+                            $q->where('user_id', $user->id);
+                         })
+                         ->whereHas('evaluation')
+                         ->count(),
         ];
 
         return view('dashboard', compact('sessions', 'stats'));
+    }
+
+    /**
+     * Toggle status aktif/nonaktif sesi (untuk tombol saklar di tabel)
+     */
+    public function toggle(Session $session)
+    {
+        // Pastikan hanya pemilik sesi yang bisa mengubah status
+        if ($session->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $session->update([
+            'is_active' => !$session->is_active
+        ]);
+
+        $status = $session->is_active ? 'diaktifkan' : 'dinonaktifkan';
+        
+        return back()->with('success', "Sesi '{$session->title}' berhasil {$status}.");
+    }
+
+    /**
+     * Menghapus sesi beserta data terkait
+     */
+    public function destroy(Session $session)
+    {
+        if ($session->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $session->delete();
+
+        return back()->with('success', 'Sesi berhasil dihapus secara permanen.');
     }
 }

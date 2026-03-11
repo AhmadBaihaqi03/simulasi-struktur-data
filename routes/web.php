@@ -6,11 +6,13 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\CodeExecutionController;
+use App\Http\Controllers\MateriController;
+use App\Http\Controllers\CompilerController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
-});
+}) ->name('beranda');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // API untuk menjalankan kode C
@@ -55,6 +57,10 @@ Route::prefix('pbl')->group(function () {
     Route::get('/{session_code}/introduction', [StudentController::class, 'showPhase1'])->name('student.phase1');
     Route::post('/{session_code}/join-group', [StudentController::class, 'joinGroup'])->name('student.join.group');
 
+
+    //percobaan untuk halaman pakai tailwind
+    Route::get('/{session_code}/orientasi', [StudentController::class, 'showOrientasi'])->name('student.orientasi');
+
     // 3. Halaman Workspace Utama (Satu Halaman untuk Semua Fase)
     Route::get('/{session_code}/workspace/{group_id}/{phase?}', [StudentController::class, 'showPhase'])->name('student.phase');
 
@@ -64,3 +70,10 @@ Route::prefix('pbl')->group(function () {
     // 5. Halaman Selesai
     Route::get('/{session_code}/complete/{group_id}', [StudentController::class, 'complete'])->name('student.complete');
 });
+
+// Halaman Materi
+Route::get('/materi/{slug}', [MateriController::class, 'show'])->name('materi.show');
+
+// Halaman Percobaan Compiler
+Route::get('/compiler', [CompilerController::class, 'index']); 
+Route::post('/run-python', [CompilerController::class, 'run'])->name('run.python');

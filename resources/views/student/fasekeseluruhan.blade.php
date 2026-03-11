@@ -2,221 +2,172 @@ Test JDoodle connectivity dulu
 
 <x-workspace-layout>
     <style>
-        body { background-color: #f8fafc; }
+        body { background-color: #f8fafc; color: #334155; }
         .text-indigo { color: #5c60f5 !important; }
         .bg-indigo { background-color: #5c60f5 !important; }
-        .bg-indigo-subtle { background-color: #eef0ff !important; }
+        .bg-indigo-subtle { background-color: #f0f2ff !important; }
         .border-indigo { border-color: #5c60f5 !important; }
 
-        /* Card & UI Elements */
-        .card-eval { border-radius: 18px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.03); background: white; }
-        .sticky-panel { top: 20px; border-top: 5px solid #5c60f5; position: sticky; border-radius: 20px; }
-
-        /* Rounded Input Boxes */
-        .answer-box-input {
-            background-color: #fcfdfe;
-            border: 2px solid #eef0ff;
-            border-radius: 15px;
-            padding: 15px;
-            transition: all 0.3s;
-        }
-        .answer-box-input:focus {
-            border-color: #5c60f5;
-            box-shadow: 0 0 0 4px rgba(92, 96, 245, 0.1);
-            outline: none;
+        /* Card Workspace */
+        .card-workspace { border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); background: white; margin-bottom: 24px;}
+        .sticky-panel { top: 24px; position: sticky; border-top: 5px solid #5c60f5; border-radius: 20px;
         }
 
-        .label-mini { font-size: 0.65rem; font-weight: 800; letter-spacing: 1px; color: #94a3b8; text-transform: uppercase; }
+        /* Form Inputs */
+        .answer-box-input {background-color: #fcfdfe; border: 2px solid #f1f5f9; border-radius: 12px;padding: 14px;transition: all 0.2s ease;}
+        .answer-box-input:focus {border-color: #5c60f5;box-shadow: 0 0 0 4px rgba(92, 96, 245, 0.1);outline: none;}
+        .label-mini {font-size: 0.65rem; font-weight: 800; letter-spacing: 1px; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;display: block;}
 
-        .phase-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-        .icon-box {
-            width: 38px; height: 38px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 10px; background-color: #eef0ff; color: #5c60f5;
-        }
-
-        .hover-lift { transition: transform 0.2s; }
-        .hover-lift:hover { transform: translateY(-2px); }
+        /* Editor & Terminal (Aksen Indigo) */
+        .editor-container { border-radius: 15px; overflow: hidden; border: 1px solid #e2e8f0; }
+        .editor-header { background: #1e1e2e; padding: 12px 16px; display: flex; align-items: center; gap: 8px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: #475569; } 
+        #cOutput {font-family: 'Fira Code', monospace;color: #a5b4fc; /* Light Indigo for text output */min-height: 100px;white-space: pre-wrap;}
     </style>
 
     <div class="container py-5">
         <form action="{{ route('student.save.all', [$session->session_code, $group->id]) }}" method="POST">
             @csrf
 
-            <div class="mb-5">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="badge bg-indigo-subtle text-indigo px-4 py-2 rounded-pill fw-bold">
-                        SESI AKTIF: {{ $session->session_code }}
-                    </span>
-                    <div class="text-muted small fw-bold">
-                        <i class="bi bi-clock-history me-1"></i> Progres otomatis tersimpan saat tombol simpan diklik
-                    </div>
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
+                <div>
+                    <a href="{{ route('beranda') }}" class="text-decoration-none text-muted small fw-bold d-flex align-items-center mb-2 hover-indigo">
+                        <i class="bi bi-arrow-left me-1"></i> KEMBALI KE BERANDA
+                    </a>
+                    <h1 class="fw-bold text-dark mb-1">{{ $session->title }}</h1>
+                    <p class="text-muted mb-0">Kelompok: <span class="fw-bold text-indigo">{{ $group->group_name }}</span></p>
                 </div>
-
-                <div class="d-flex justify-content-between align-items-end">
-                    <div>
-                        <h1 class="fw-bold text-dark m-0">{{ $session->title }}</h1>
-                        <p class="text-muted m-0">Ruang Kerja Kelompok: <span class="fw-bold text-indigo">{{ $group->group_name }}</span></p>
-                    </div>
+                
+                <div class="bg-white border rounded-pill px-4 py-2 shadow-sm d-flex align-items-center">
+                    <small class="text-muted fw-bold text-uppercase me-2 border-end pe-2" style="font-size: 10px; letter-spacing: 1px;">Sesi Aktif</small>
+                    <span class="text-indigo fw-bold small uppercase tracking-wider">{{ $session->session_code }}</span>
                 </div>
             </div>
 
             <div class="row g-4">
                 <div class="col-lg-8">
-
-                    <div class="card card-eval p-4 mb-4 border-start border-indigo border-5">
-                        <div class="phase-header">
-                            <div class="icon-box"><i class="bi bi-rocket-takeoff-fill"></i></div>
-                            <h5 class="fw-bold m-0">Phase 01: Orientasi Masalah</h5>
+                    
+                    <div class="card card-workspace p-4 p-md-5">
+                        <div class="d-flex align-items-center gap-3 mb-4">
+                            <div class="bg-indigo text-white rounded-3 p-2 px-3 shadow-s"><i class="bi bi-people-fill fs-5"></i></div>
+                            <h5 class="fw-bold m-0 text-indigo">Phase 01 & 02: Tim & Orientasi</h5>
                         </div>
 
                         <div class="mb-4 px-2">
-                            <label class="label-mini mb-2 d-block text-indigo">Konteks & Masalah:</label>
-                            <div class="p-3 bg-light" style="border-radius: 15px; white-space: pre-wrap;">{{ $session->f1_context }}</div>
+                            <label class="label-mini text-indigo">Masalah yang dihadapi:</label>
+                            <div class="p-3 bg-light rounded-3 italic" style="white-space: pre-wrap;">"{{ $session->f1_context }}"</div>
                         </div>
 
                         <div class="px-2">
-                            <label class="label-mini mb-2 d-block text-indigo">Learning Objectives:</label>
-                            <div class="bg-indigo-subtle p-3" style="border-radius: 15px;">
-                                <ul class="mb-0 list-unstyled">
-                                    @foreach($session->f1_learning_objectives ?? [] as $outcome)
-                                        <li class="text-dark small fw-semibold mb-1">• {{ $outcome }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card card-eval p-4 mb-4">
-                        <div class="phase-header">
-                            <div class="icon-box"><i class="bi bi-people-fill"></i></div>
-                            <h5 class="fw-bold m-0">Phase 02: Organisasi Belajar</h5>
-                        </div>
-
-                        <div class="px-2">
-                            <label class="label-mini mb-3 d-block text-indigo">Daftar Anggota Kelompok:</label>
-
+                            <label class="label-mini text-indigo">Anggota Tim:</label>
                             <div id="members-container">
-                                @php
-                                    // Kita ambil data anggota yang sudah tersimpan, jika belum ada buat minimal 1 input kosong
-                                    $members = $group->student_data['members'] ?? [''];
-                                @endphp
-
+                                @php $members = $group->student_data['members'] ?? ['']; @endphp
                                 @foreach($members as $index => $member)
-                                    <div class="d-flex gap-2 mb-2 member-item">
-                                        <input type="text" name="members[]" class="form-control answer-box-input"
-                                            placeholder="Nama Anggota {{ $index + 1 }}" value="{{ $member }}" required>
-                                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 remove-member">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
+                                    <div class="d-flex align-items-center gap-2 mb-2 member-item">
+                                        <input type="text" name="members[]" class="form-control answer-box-input w-100"
+                                            placeholder="Nama Anggota" value="{{ $member }}" required> 
+                                        <div style="width: 40px;" class="text-center">
+                                            <button type="button" class="btn btn-link text-danger remove-member p-0 border-0">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
-
-                            <button type="button" id="add-member" class="btn btn-indigo-subtle text-indigo fw-bold btn-sm mt-2 rounded-pill px-4">
-                                <i class="bi bi-plus-lg me-1"></i> Tambah Anggota
+                            <button type="button" id="add-member" class="btn btn-link text-indigo fw-bold p-0 mt-2 text-decoration-none small">
+                                <i class="bi bi-plus-circle-fill me-1"></i> Tambah Anggota
                             </button>
                         </div>
                     </div>
 
-                    <div class="card card-eval p-4 mb-4">
-                        <div class="phase-header">
-                            <div class="icon-box"><i class="bi bi-card-checklist"></i></div>
-                            <h5 class="fw-bold m-0">Phase 03: Inquiry & Investigation</h5>
+                    <div class="card card-workspace p-4 p-md-5">
+                        <div class="d-flex align-items-center gap-3 mb-4">
+                            <div class="bg-indigo text-white rounded-3 p-2 px-3 shadow-s"><i class="bi bi-chat-left-text-fill fs-5"></i></div>
+                            <h5 class="fw-bold m-0 text-indigo">Phase 03: Inquiry</h5>
                         </div>
                         @foreach($session->f3_questions ?? [] as $index => $q)
                             <div class="mb-4 px-2">
-                                <p class="fw-bold mb-2 text-dark" style="font-size: 0.95rem;">{{ $index + 1 }}. {{ $q }}</p>
-                                {{-- Menggunakan null coalescing operator agar tidak error jika index belum ada --}}
-                                <textarea name="f3_answers[{{ $index }}]"
-                                        class="form-control answer-box-input w-100"
-                                        rows="3"
-                                        placeholder="Tuliskan hasil diskusi kelompok di sini...">{{ old("f3_answers.$index", $group->f3_answers[$index] ?? '') }}</textarea>
+                                <p class="fw-bold mb-2 text-dark" style="font-size: 0.9rem;">{{ $index + 1 }}. {{ $q }}</p>
+                                <textarea name="f3_answers[{{ $index }}]" class="form-control answer-box-input"
+                                          rows="3" placeholder="Hasil diskusi kelompok...">{{ old("f3_answers.$index", $group->f3_answers[$index] ?? '') }}</textarea>
                             </div>
                         @endforeach
                     </div>
 
-                    <div class="card card-eval p-4 mb-4 border-start border-success border-5">
-                        <div class="phase-header">
-                            <div class="icon-box bg-success-subtle text-success"><i class="bi bi-cpu-fill"></i></div>
-                            <h5 class="fw-bold m-0">Phase 04: C Programming Sandbox (Fast Engine)</h5>
+                    <div class="card card-workspace p-4 p-md-5">
+                        <div class="d-flex align-items-center gap-3 mb-4">
+                            <div class="bg-indigo text-white rounded-3 p-2 px-3 shadow-sm"><i class="bi bi-code-slash fs-5"></i></div>
+                            <h5 class="fw-bold m-0 text-indigo">Phase 04: Implementation</h5>
                         </div>
 
-                        <div class="mb-3 px-2">
-                            <label class="label-mini mb-2 d-block text-indigo">Editor Kode C:</label>
-                            <textarea id="cEditor" name="f4_code" class="form-control"
-                                    style="font-family: 'Fira Code', monospace; height: 300px; background: #1e1e2e; color: #d1d5db; border-radius: 12px; padding: 15px; border: none;"
-                            >{{ old('f4_code', $group->f4_code ?? "#include <stdio.h>\n\nint main() {\n    printf(\"Halo dari Glot.io!\\n\");\n    return 0;\n}") }}</textarea>
-                        </div>
-
-                        <div class="px-2 mb-3">
-                            <button type="button" onclick="runCCode()" id="runBtn" class="btn btn-success w-100 py-2 fw-bold shadow-sm hover-lift">
-                                <i class="bi bi-play-circle-fill me-2"></i> JALANKAN KODE
-                            </button>
-                        </div>
-
-                        <div class="px-2">
-                            <div class="bg-dark rounded-4 p-3 shadow-inner">
-                                <label class="label-mini text-secondary d-block mb-2">Terminal Output:</label>
-                                <div id="cOutput" style="font-family: 'Courier New', monospace; color: #10b981; min-height: 80px; font-size: 0.9rem; white-space: pre-wrap; overflow-y: auto;">> Siap menerima perintah...</div>
+                        <div class="editor-container mb-3 shadow-sm">
+                            <div class="editor-header">
+                                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                                <span class="text-secondary small ms-2 fw-mono" style="font-size: 10px;">main.c</span>
                             </div>
+                            <textarea id="cEditor" name="f4_code" class="form-control border-0"
+                                      style="font-family: 'Fira Code', monospace; height: 300px; background: #1e1e2e; color: #d1d5db; padding: 20px; border-radius: 0;">{{ old('f4_code', $group->f4_code ?? "#include <stdio.h>\n\nint main() {\n    printf(\"Hello Indigo Workspace!\\n\");\n    return 0;\n}") }}</textarea>
                         </div>
 
-                        <hr class="my-4 opacity-25">
+                        <button type="button" onclick="runCCode()" id="runBtn" class="btn btn-indigo w-100 py-3 fw-bold rounded-3 shadow-sm mb-4">
+                            <i class="bi bi-play-fill me-1 fs-5"></i> JALANKAN PROGRAM
+                        </button>
+
+                        <div class="bg-dark rounded-3 p-3 mb-4 shadow-lg">
+                            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom border-secondary pb-2">
+                                <label class="label-mini text-secondary mb-0">Terminal Output</label>
+                                <i class="bi bi-terminal text-secondary small"></i>
+                            </div>
+                            <div id="cOutput">> Ready...</div>
+                        </div>
 
                         <div class="px-2">
-                            <label class="label-mini mb-2 d-block text-indigo">Analisis & Deskripsi Sistem:</label>
-                            <p class="fw-bold mb-2 small">{{ $session->f4_question }}</p>
+                            <label class="label-mini text-indigo">Analisis Kelompok:</label>
+                            <p class="fw-bold mb-2 small text-dark">{{ $session->f4_question }}</p>
                             <textarea name="f4_answers" class="form-control answer-box-input" rows="3"
-                                    placeholder="Jelaskan logika kode di atas...">{{ old('f4_answers', $group->f4_answers) }}</textarea>
+                                      placeholder="Jelaskan logika solusi kalian...">{{ old('f4_answers', $group->f4_answers) }}</textarea>
                         </div>
                     </div>
 
-                    <div class="card card-eval p-4 mb-5">
-                        <div class="phase-header">
-                            <div class="icon-box"><i class="bi bi-chat-dots-fill"></i></div>
-                            <h5 class="fw-bold m-0">Phase 05: Reflection</h5>
+                    <div class="card card-workspace p-4 p-md-5 mb-5">
+                        <div class="d-flex align-items-center gap-3 mb-4">
+                            <div class="bg-indigo text-white rounded-3 p-2 px-3 shadow-s"><i class="bi bi-stars fs-5"></i></div>
+                            <h5 class="fw-bold m-0 text-indigo">Phase 05: Reflection</h5>
                         </div>
                         @foreach($session->f5_questions ?? [] as $index => $r)
                             <div class="mb-4 px-2">
                                 <p class="fw-bold mb-2 text-dark small">{{ $r }}</p>
-                                <textarea name="f5_answers[{{ $index }}]"
-                                        class="form-control answer-box-input"
-                                        rows="3"
-                                        placeholder="Apa yang kalian pelajari dari bagian ini?">{{ old("f5_answers.$index", $group->f5_answers[$index] ?? '') }}</textarea>
+                                <textarea name="f5_answers[{{ $index }}]" class="form-control answer-box-input" rows="3">{{ old("f5_answers.$index", $group->f5_answers[$index] ?? '') }}</textarea>
                             </div>
                         @endforeach
                     </div>
                 </div>
 
                 <div class="col-lg-4">
-                    <div class="card card-eval p-4 sticky-panel shadow-lg border-0">
-                        <div class="text-center mb-4 pb-3 border-bottom">
-                            <h6 class="fw-bold text-dark mb-1">Status Pengerjaan</h6>
-                            <p class="text-muted small mb-0">Kelompok: {{ $group->group_name }}</p>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="label-mini d-block mb-3 text-center">Tindakan Kelompok</label>
-
-                            <button type="submit" name="action" value="save" class="btn bg-indigo text-white w-100 py-3 fw-bold shadow-sm hover-lift mb-3" style="border-radius: 15px;">
-                                <i class="bi bi-cloud-arrow-up-fill me-2"></i> SIMPAN PROGRES
-                            </button>
-
-                            <button type="submit" name="action" value="submit" class="btn btn-dark w-100 py-3 fw-bold shadow-sm hover-lift"
-                                    style="border-radius: 15px;"
-                                    onclick="return confirm('Apakah kalian yakin ingin mengumpulkan? Jawaban tidak bisa diubah setelah ini.')">
-                                <i class="bi bi-send-check-fill me-2"></i> SUBMIT TUGAS AKHIR
-                            </button>
-                        </div>
-
-                        <div class="bg-indigo-subtle p-3 rounded-4 mt-2">
-                            <div class="d-flex align-items-center gap-2 text-indigo mb-2">
-                                <i class="bi bi-info-circle-fill"></i>
-                                <span class="small fw-bold uppercase">Tips Diskusi</span>
+                    <div class="card card-workspace p-4 sticky-panel border-0 shadow-lg">
+                        <div class="text-center mb-4">
+                            <h6 class="fw-bold text-dark mb-1 small">PANEL KONTROL</h6>
+                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                <span class="rounded-circle bg-success shadow-sm" style="width: 8px; height: 8px;"></span>
+                                <small class="text-muted fw-bold" style="font-size: 11px;">Koneksi Stabil</small>
                             </div>
-                            <p class="small text-muted mb-0" style="font-size: 0.75rem;">
-                                Pastikan setiap anggota kelompok memberikan masukan sebelum menekan tombol <strong>Submit Tugas Akhir</strong>.
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" name="action" value="save" class="btn btn-indigo py-3 fw-bold rounded-3 shadow-sm transition-all hover-lift">
+                                <i class="bi bi-cloud-check-fill me-2"></i> SIMPAN PROGRES
+                            </button>
+
+                            <button type="submit" name="action" value="submit" id="submitBtn" 
+                                    class="btn btn-dark py-3 fw-bold rounded-3 shadow-sm transition-all hover-lift">
+                                <i class="bi bi-send-fill me-2"></i> SUBMIT TUGAS
+                            </button>
+                        </div>
+
+                        <div class="bg-indigo-subtle p-3 rounded-3 mt-4 border border-indigo border-opacity-10">
+                            <p class="small text-muted mb-0" style="font-size: 0.8rem;">
+                                <i class="bi bi-info-circle-fill text-indigo me-1"></i>
+                                Simpan perubahan secara berkala agar tidak hilang saat bergantian perangkat.
                             </p>
                         </div>
                     </div>
@@ -229,11 +180,16 @@ Test JDoodle connectivity dulu
         document.getElementById('add-member').addEventListener('click', function() {
             const container = document.getElementById('members-container');
             const newItem = document.createElement('div');
-            newItem.className = 'd-flex gap-2 mb-2 member-item';
+            
+            newItem.className = 'd-flex align-items-center gap-2 mb-2 member-item'; 
             newItem.innerHTML = `
-                <input type="text" name="members[]" class="form-control answer-box-input" placeholder="Nama Anggota" required>
-                <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 remove-member"><i class="bi bi-trash"></i></button>
-            `;
+                <input type="text" name="members[]" class="form-control answer-box-input w-100" 
+                    placeholder="Nama Anggota" required>
+                <div style="width: 40px;" class="d-flex justify-content-center align-items-center">
+                    <button type="button" class="btn btn-link text-danger remove-member p-0 border-0">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>`;
             container.appendChild(newItem);
         });
 
@@ -319,5 +275,34 @@ Test JDoodle connectivity dulu
                 btn.innerHTML = '<i class="bi bi-play-circle-fill me-2"></i> JALANKAN KODE';
             }
         }
+
+        document.getElementById('submitBtn').addEventListener('click', function(e) {
+            // Ambil semua input dan textarea yang wajib diisi
+            const inputs = document.querySelectorAll('.answer-box-input');
+            let allFilled = true;
+            inputs.forEach(input => {
+                if (input.value.trim() === "") {
+                    allFilled = false;
+                    input.classList.add('border-danger'); // Beri tanda merah kalau kosong
+                } else {
+                    input.classList.remove('border-danger');
+                }
+            });
+
+            if (!allFilled) {
+                e.preventDefault(); // Batalkan submit
+                alert('Ups! Mohon lengkapi semua jawaban di setiap fase sebelum mengumpulkan tugas.');
+                
+                // Scroll ke elemen pertama yang kosong agar murid tahu
+                const firstEmpty = document.querySelector('.border-danger');
+                if (firstEmpty) firstEmpty.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+
+            // Konfirmasi akhir
+            if (!confirm('Apakah kalian yakin ingin mengumpulkan? Setelah dikumpulkan, jawaban tidak dapat diubah lagi dan akan langsung muncul di halaman evaluasi Guru.')) {
+                e.preventDefault();
+            }
+        });
     </script>
 </x-workspace-layout>

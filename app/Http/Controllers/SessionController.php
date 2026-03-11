@@ -79,15 +79,14 @@ class SessionController extends Controller
         return back()->with('success', 'Sesi berhasil dihapus!');
     }
 
+
     public function evaluations(Session $session)
     {
-        // Proteksi keamanan: Pastikan guru yang login adalah pemilik sesi
-        //if ($session->user_id !== auth()->id()) { abort(403);} -> sementara baris yang seperti ini aku komen dulu
+        // Cukup ambil yang is_submitted saja
+        $groups = $session->groups()
+                        ->where('is_submitted', true)
+                        ->get();
 
-        // Load data kelompok (student_groups) yang terhubung dengan sesi ini
-        // Kita gunakan eager loading 'groups' agar lebih cepat
-        $session->load('groups');
-
-        return view('sessions.evaluation', compact('session')); 
+        return view('sessions.evaluation', compact('session', 'groups')); 
     }
 }
