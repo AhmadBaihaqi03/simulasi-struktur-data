@@ -119,8 +119,33 @@ class StudentController extends Controller
     public function saveAll(Request $request, $session_code, $group_id)
     {
         $group = StudentGroup::findOrFail($group_id);
+        
+        // 1. Ambil semua nama inputan dari form
+        $inputMembers = collect($request->members)->filter()->map(fn($n) => trim($n));
 
-        // Update data dasar
+        // 2. Validasi Duplikasi Internal (dalam satu kelompok yang sama)
+        if ($inputMembers->count() !== $inputMembers->unique()->count()) {
+            return back()->with('error', 'Ada nama anggota yang ganda di inputan kelompok Anda!')->withInput();
+        }
+
+        // 3. Validasi Duplikasi Berdasarkan Guru (Teacher-Level Validation)
+        $teacherId = $group->session()->first()->user_id;
+
+        foreach ($inputMembers as $name) {
+            $exists = StudentGroup::where('id', '!=', $group_id) // Kecuali kelompok sendiri
+                ->whereHas('session', function($query) use ($teacherId) {
+                    $query->where('user_id', $teacherId); // Harus dalam lingkup guru yang sama
+                })
+                ->where('student_data->members', 'LIKE', '%"' . $name . '"%')
+                ->exists();
+
+            if ($exists) {
+                return back()->with('error', "Nama '$name' sudah terdaftar di kelas lain milik guru ini!")->withInput();
+            }
+        }
+        
+
+        // Update data jika lolos validasi
         $group->update([
             'f3_answers' => $request->f3_answers,
             'f4_code' => $request->f4_code,
@@ -131,18 +156,37 @@ class StudentController extends Controller
             ]
         ]);
 
-        // Jika aksi tombol adalah 'submit'
         if ($request->action == 'submit') {
-            $group->update([
-                'is_submitted' => true,
-                'current_phase' => 5 // Pastikan di database tercatat sampai fase akhir
-            ]);
-
-            return redirect()->route('student.complete', [$session_code, $group->id])
-                             ->with('success', 'Tugas berhasil dikirim!');
+            $group->update(['is_submitted' => true, 'current_phase' => 5]);
+            return redirect()->route('student.complete', [$session_code, $group->id])->with('success', 'Tugas dikirim!');
         }
 
         return back()->with('success', 'Progres berhasil disimpan!');
+    }
+
+    // 4. Fungsi Baru untuk Live Check (AJAX) - Filter by Teacher
+    public function checkMemberName(Request $request)
+    {
+        $name = trim($request->name);
+        $groupId = $request->group_id;
+
+        // Cari dulu kelompok ini untuk dapat ID Gurunya
+        $group = StudentGroup::with('session')->find($groupId);
+        if (!$group || !$group->session) {
+            return response()->json(['exists' => false]);
+        }
+
+        $teacherId = $group->session->user_id;
+
+        // Cek duplikasi di semua sesi milik guru tersebut
+        $exists = StudentGroup::where('id', '!=', $groupId)
+            ->whereHas('session', function($query) use ($teacherId) {
+                $query->where('user_id', $teacherId);
+            })
+            ->where('student_data->members', 'LIKE', '%"' . $name . '"%')
+            ->exists();
+
+        return response()->json(['exists' => $exists]);
     }
 
     // Halaman sukses setelah submit

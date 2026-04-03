@@ -12,7 +12,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #e0e7ff }
         
         /* Efek blur transparan pada Header (Glassmorphism) */
         .glass-header { backdrop-filter: blur(16px); background: rgba(255, 255, 255, 0.8); }
@@ -20,7 +20,7 @@
 </head>
 <body class="antialiased text-slate-900">
 
-    <div class="sticky top-0 z-50 bg-[#F8FAFC]/80 backdrop-blur-md pb-2">
+    <div class="sticky top-0 z-50 bg-[#e0e7ff]/80 backdrop-blur-md pb-2">
         <div class="max-w-5xl mx-auto px-6 pt-6">
             <header class="glass-header border border-indigo-50 rounded-2xl p-4 flex items-center justify-between shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
                 

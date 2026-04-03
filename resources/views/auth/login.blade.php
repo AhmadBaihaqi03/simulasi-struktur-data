@@ -1,6 +1,6 @@
 <x-guest-layout>
     @section('title', 'Vilogic - Login')
-    <div class="min-h-screen flex items-center justify-center bg-[#F8FAFC] p-4 lg:p-8 relative overflow-hidden">
+    <div class="min-h-screen flex items-center justify-center bg-[#e0e7ff] p-4 lg:p-8 relative overflow-hidden">
         <div class="absolute -top-24 -right-24 w-96 h-96 bg-indigo-100/40 rounded-full blur-3xl"></div>
         <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-100/40 rounded-full blur-3xl"></div>
 

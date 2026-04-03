@@ -39,6 +39,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/sessions/{session}', [SessionController::class, 'update'])->name('sessions.update');
     Route::patch('/sessions/{session}/toggle', [SessionController::class, 'toggle'])->name('sessions.toggle');
     Route::delete('/sessions/{session}', [SessionController::class, 'destroy'])->name('sessions.destroy');
+    Route::post('/check-member-name', [StudentController::class, 'checkMemberName'])->name('student.check.name');
 
     // Rute Evaluasi
     Route::get('/sessions/{session}/evaluations', [SessionController::class, 'evaluations'])->name('sessions.evaluations');

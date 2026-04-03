@@ -38,7 +38,7 @@
             height: 45px;
             border-radius: 10px;
             border: 1px solid #cbd5e1;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             transition: all 0.2s;
         }
         .search-input-full:focus {
@@ -51,11 +51,11 @@
     <div class="container py-5" style="max-width: 900px;">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2 class="fw-bold text-indigo mb-0">Panel Evaluasi</h2>
-                <p class="text-muted mb-0">Sesi: <span class="text-dark fw-semibold">{{ $session->title }}</span></p>
+                <h2 class="fw-bold mb-0" style="font-size: 2rem; letter-spacing: -1px; font-weight: 700 !important;">Panel Evaluasi</h2>
+                <p class="text-muted mb-0" style="font-size: 1.2rem;">Sesi: <span class="text-dark" style="font-size: 1.2rem;">{{ $session->title }}</span></p>
             </div>
             <div class="text-end">
-                <span class="d-block text-muted small text-uppercase fw-bold mb-1" style="font-size: 0.7rem;">Kode Sesi</span>
+                <span class="d-block text-muted small text-uppercase fw-bold mb-1" style="font-size: 0.9rem;">Kode Sesi</span>
                 <div class="session-code-box shadow-sm">
                     <h4 class="fw-bold text-indigo font-monospace mb-0" style="letter-spacing: 1px;">
                         {{ $session->session_code }}
@@ -66,10 +66,10 @@
 
         <div class="card card-custom p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0 text-dark">
+                <h5 class="fw-bold mb-0 text-dark" style="font-size: 1rem;" >
                     <i class="bi bi-people-fill text-indigo me-2"></i>Daftar Kelompok Mahasiswa
                 </h5>
-                <span class="badge bg-indigo bg-opacity-10 text-indigo px-3 py-2 rounded-pill fw-bold">
+                <span class="badge bg-indigo bg-opacity-10 text-indigo px-3 py-2 rounded-pill fw-bold" style="font-size: 1rem;">
                     {{ $groups->count() }} Kelompok Terdaftar
                 </span>
             </div>
@@ -100,13 +100,13 @@
                                 </td>
                                 <td class="border-0">
                                     @if($group->evaluation)
-                                        <div class="d-flex align-items-center text-success fw-bold">
+                                        <div class="d-flex align-items-center fw-bold" style="color: #10b981;">
                                             <i class="bi bi-check-circle-fill me-2"></i>
                                             <span>Sudah Diberi Feedback</span>
                                             {{--  <span>Skor: {{ $group->evaluation->score }}</span> --}}
                                         </div>
                                     @else
-                                        <div class="d-flex align-items-center text-warning fw-bold">
+                                        <div class="d-flex align-items-center fw-bold" style="color: #f59e0b;" >
                                             <i class="bi bi-hourglass-split me-2"></i>
                                             <span>Menunggu Feedback</span>
                                         </div>
@@ -121,7 +121,7 @@
                             @endforeach
                             <tr id="noResults" style="display: none;">
                                 <td colspan="3" class="text-center py-5">
-                                    <i class="bi bi-search text-muted mb-2 d-block" style="font-size: 2rem;"></i>
+                                    <i class="bi bi-search text-muted mb-2 d-block" style="font-size: 1rem;"></i>
                                     <span class="text-muted">Maaf, kelompok dengan nama tersebut tidak ditemukan.</span>
                                 </td>
                             </tr>

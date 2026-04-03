@@ -11,7 +11,6 @@
     .text-indigo { color: #5c60f5 !important; }
     .bg-indigo   { background-color: #5c60f5 !important; }
 
-
     /* ---------------------------------------------------------
        2. KARTU & KONTEN (Fase PBL)
     ------------------------------------------------------------ */
@@ -19,7 +18,7 @@
         background: white;
         border-radius: 20px; 
         border: none; 
-        margin-bottom: 2rem; 
+        margin-bottom: 1rem; 
         box-shadow: 0 10px 25px rgba(0,0,0,0.02); 
         transition: 0.3s; 
     }
@@ -35,18 +34,28 @@
         color: #5c60f5; 
         background-color: #eef0ff; 
         margin-right: 18px; 
-        font-size: 1.4rem;
+        font-size: 1.6rem;
     }
 
 
     /* ---------------------------------------------------------
        3. FORMULIR & INPUT 
     ------------------------------------------------------------ */
+    /* Label tiap fase */
+    .phase-title {
+        font-size: 1.2rem; 
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #5c60f5;
+        display: block;
+    }
+
     /* Label teks kecil di atas input (Uppercase) */
     .label-custom { 
         font-weight: 800; 
         color: #4a5568; 
-        font-size: 0.7rem; 
+        font-size: 1rem; 
         text-transform: uppercase; 
         letter-spacing: 1.2px; 
         margin-bottom: 0.8rem; 
@@ -55,14 +64,16 @@
 
     /* Desain Input & Textarea kustom */
     .form-control-custom { 
-        background-color: #f8fafc; 
-        border: 1px solid #e2e8f0; 
+        background-color: #ffffff; /* Ubah ke putih agar kontras dengan border */
+        border: 2px solid #e2e8f0; /* Pertegas border (sama dengan box evaluasi) */
         border-radius: 15px; 
         padding: 15px; 
-        font-size: 0.95rem; 
+        font-size: 1rem; 
         line-height: 1.6;
         resize: vertical; /* Memungkinkan guru memperbesar kotak teks */
         transition: all 0.2s ease-in-out; 
+
+        
     }
 
     /* Efek saat input diklik (Focus) */
@@ -83,7 +94,7 @@
         font-weight: 700; 
         border-radius: 12px; 
         padding: 8px 20px; 
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         transition: 0.3s; 
     }
 
@@ -92,22 +103,7 @@
         color: white; 
     }
 
-
-    /* ---------------------------------------------------------
-       5. SIDEBAR & NAVIGATION (Sticky Logic)
-    ------------------------------------------------------------ */
-    /* Bar navigasi bawah (jika ada) */
-    .bottom-bar { 
-        position: sticky; 
-        bottom: 0; 
-        padding: 25px 0; 
-        background: rgba(255, 255, 255, 0.9); 
-        backdrop-filter: blur(12px); 
-        border-top: 1px solid #e2e8f0; 
-        z-index: 100; 
-    }
-
-    /* Panel Kanan (Sticky Sidebar) */
+    /* 5. Panel Kanan (Sticky Sidebar) */
     .sticky-sidebar { 
         position: sticky; 
         top: 100px; /* Jarak dari atas layar saat di-scroll */
@@ -119,8 +115,6 @@
         /* Mengatur ketinggian maksimal agar tidak melebihi layar */
         max-height: calc(100vh - 110px); 
         overflow-y: auto;
-
-        /* border-top: 6px solid #5c60f5 !important; <-- GARIS UNGU DIHAPUS DI SINI */
     }
 
 
@@ -139,7 +133,7 @@
 
    <div class="container py-5">
         <div class="text-center mb-5">
-            <h2 class="fw-black text-slate-900" style="font-size: 2.5rem; letter-spacing: -1px;">Buat Sesi PBL Anda</h2>
+            <h2 class="fw-black text-slate-900" style="font-size: 2rem; letter-spacing: -1px; font-weight: 700;">Buat Sesi PBL Anda</h2>
         </div>
 
         <form action="{{ route('sessions.store') }}" method="POST" id="pblForm">
@@ -150,9 +144,11 @@
                     
                     <div class="card phase-card p-4 p-md-5">
                         <div class="d-flex align-items-center mb-5">
-                            <div class="phase-icon"><i class="bi bi-journal-richtext"></i></div>
+                            <div class="phase-icon">
+                                <i class="bi bi-journal-richtext"></i>
+                            </div>
                             <div>
-                                <small class="text-indigo fw-black small tracking-widest uppercase">Fase 1: Orientasi Masalah</small>
+                                <span class="phase-title">Orientasi Masalah</span>
                             </div>
                         </div>
 
@@ -184,7 +180,7 @@
                         <div class="d-flex align-items-center mb-5">
                             <div class="phase-icon"><i class="bi bi-search"></i></div>
                             <div>
-                                <small class="text-indigo fw-black small tracking-widest uppercase">Fase 3: Penyelidikan</small>
+                                <span class="phase-title">Penyelidikan</span>
                             </div>
                         </div>
                         <div id="questions-container">
@@ -193,8 +189,8 @@
                                 <textarea name="f3_questions[]" class="form-control form-control-custom" rows="3" placeholder="Berikan pertanyaan agar siswa mendiskusikan dan menganalisis permasalahan..." required></textarea>
                             </div>
                         </div>
-                        <button type="button" id="add-question" class="btn btn-indigo-outline btn-sm px-4 mt-2">
-                            <i class="bi bi-plus-lg me-1"></i> Tambah Pertanyaan Lain
+                        <button type="button" id="add-question" class="btn btn-indigo-outline px-4 mt-2">
+                            <i class="bi bi-plus-lg me-2"></i> Tambah Pertanyaan Lain
                         </button>
                     </div>
 
@@ -202,7 +198,7 @@
                         <div class="d-flex align-items-center mb-5">
                             <div class="phase-icon"><i class="bi bi-code-square"></i></div>
                             <div>
-                                <small class="text-indigo fw-black small tracking-widest uppercase">Fase 4: Mengembangkan & Menyajikan Solusi</small>
+                                <span class="phase-title">Mengembangkan dan Menyajikan Solusi</span>
                             </div>
                         </div>
                         <div class="mb-4">
@@ -219,7 +215,7 @@
                         <div class="d-flex align-items-center mb-5">
                             <div class="phase-icon"><i class="bi bi-stars"></i></div>
                             <div>
-                                <small class="text-indigo fw-black small tracking-widest uppercase">Fase 5: Evaluasi</small>
+                                <span class="phase-title">Evaluasi</span>
                             </div>
                         </div>
                         <div id="reflection-container">
@@ -228,8 +224,8 @@
                                 <textarea name="f5_questions[]" class="form-control form-control-custom" rows="2" placeholder="Pertanyaan untuk menutup sesi pembelajaran..." required></textarea>
                             </div>
                         </div>
-                        <button type="button" id="add-reflection" class="btn btn-indigo-outline btn-sm px-4 mt-2">
-                            <i class="bi bi-plus-lg me-1"></i> Tambah Pertanyaan Refleksi
+                        <button type="button" id="add-reflection" class="btn btn-indigo-outline px-4 mt-2">
+                            <i class="bi bi-plus-lg me-2"></i> Tambah Pertanyaan Lain
                         </button>
                     </div>
 
@@ -237,21 +233,21 @@
 
                 <div class="col-lg-4">
                     <div class="sticky-sidebar">
-                        <div class="card phase-card p-4 text-center border-0 shadow-lg">
+                        <div class="card phase-card p-4 text-center border-0">
                             <div class="mb-4">
-                                <h5 class="fw-black mb-1">Finalisasi Sesi</h5>
-                                <p class="text-muted small">Tinjau kembali data sebelum deploy</p>
+                                <h5 class="mb-1" style="font-size: 1rem; font-weight:700;">FINALISASI SESI</h5>
+                                <p style="font-size: 1rem;">Tinjau kembali data sebelum deploy</p>
                             </div>
                             
                             <hr class="mb-4 opacity-50">
 
-                            <button type="submit" class="btn bg-indigo text-white w-100 py-3 fw-bold shadow-lg mb-3" style="border-radius: 15px;">
-                                <i class="bi bi-rocket-takeoff-fill me-2"></i> DEPLOY PBL SESSION
+                            <button type="submit" class="btn bg-indigo text-white w-100 py-3 fw-bold shadow-lg mb-3" style="border-radius: 15px; font-size: 0.9rem;">
+                                <i class="bi bi-rocket-takeoff-fill me-2"></i> BUAT SESI PBL
                             </button>
 
                             <div class="p-3 bg-light rounded-4">
-                                <p class="text-muted mb-0" style="font-size: 0.75rem; line-height: 1.4;">
-                                    Pastikan semua Fase (1-5) telah terisi dengan instruksi yang jelas bagi siswa.
+                                <p class="mb-0" style="font-size: 0.9rem; line-height: 1.4;">
+                                    Pastikan semua fase telah terisi dengan instruksi yang jelas bagi siswa.
                                 </p>
                             </div>
                         </div>

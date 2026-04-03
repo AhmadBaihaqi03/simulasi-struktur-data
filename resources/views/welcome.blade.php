@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #e0e7ff; }
         .card-gradient { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); }
         .btn-gradient { background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%); }
         .glass-header { backdrop-filter: blur(16px); background: rgba(255, 255, 255, 0.8); }
@@ -18,7 +18,7 @@
 
 <body class="antialiased text-slate-900">
 
-    <div class="sticky top-0 z-50 bg-[#F8FAFC] pb-2">
+    <div class="sticky top-0 z-50 bg-[#e0e7ff] pb-2">
         <div class="max-w-7xl mx-auto px-6 pt-6">
             <header class="glass-header border border-indigo-50 rounded-2xl p-4 flex items-center justify-between shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
                 <div class="flex items-center gap-3">

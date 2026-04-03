@@ -37,24 +37,44 @@
             font-weight: 400;
             line-height: 1.6;
             display: block;
+            font-size: 1rem;
         }
 
-        .phase-title { color: #1e293b; font-weight: 800; }
+        /* Label tiap fase */
+        .phase-title {
+            font-size: 1.2rem; 
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #5c60f5;
+            display: block;
+        }
 
         .answer-box { 
-            background-color: #fcfdfe; 
-            border: 1px solid #eef0ff;
+            background-color: #ffffff; /* Putih bersih agar teks lebih kontras */
+            border: 2px solid #e2e8f0; /* Dipertebal dari 1px ke 2px, warna lebih gelap */
             border-radius: 15px; 
             padding: 20px;
+            /* Memberikan efek kedalaman agar area jawaban terlihat 'masuk' ke dalam card */
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); 
         }
 
-        .label-mini { font-size: 0.65rem; font-weight: 800; letter-spacing: 1px; color: #94a3b8; text-transform: uppercase; }
+        .label-mini{
+            font-weight: 800; 
+            color: #4a5568; 
+            font-size: 1rem; 
+            text-transform: uppercase; 
+            letter-spacing: 1.2px; 
+            margin-bottom: 0.8rem; 
+            display: block; 
+        }
         
         .phase-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
         .icon-box { 
-            width: 38px; height: 38px; 
+            width: 54px; height: 54px; 
             display: flex; align-items: center; justify-content: center; 
             border-radius: 10px; background-color: #eef0ff; color: #5c60f5;
+            font-size: 1.6rem;
         }
 
         /* Editor / Code Block Styling */
@@ -99,7 +119,6 @@
             color: #475569;
             padding: 5px 12px;
             border-radius: 8px;
-            font-size: 0.85rem;
             font-weight: 600;
             border: 1px solid #e2e8f0;
         }
@@ -122,7 +141,7 @@
             </div>
 
             <h1 class="font-black text-slate-900 tracking-tight leading-tight" 
-                style="font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: 900; color: #0f172a; letter-spacing: -0.025em; line-height: 1.2;">
+                style="font-size: clamp(1.8rem, 5vw, 2rem); font-weight: 700; color: #0f172a; letter-spacing: -0.025em; line-height: 1.2;">
                 {{ $session->title }}
             </h1>
         </div>
@@ -133,23 +152,23 @@
                 <div class="card card-eval p-4 mb-4">
                     <div class="phase-header">
                         <div class="icon-box"><i class="bi bi-rocket-takeoff-fill"></i></div>
-                        <h5 class="phase-title m-0">FASE 1: ORIENTASI MASALAH & FASE 2: MENGORGANISASI SISWA</h5>
+                        <h5 class="phase-title m-0">ORIENTASI MASALAH & KELOMPOK SISWA</h5>
                     </div>
                     
                     <div class="mb-4 px-2">
-                        <label class="label-mini mb-2 d-block text-indigo">Konteks Masalah:</label>
+                        <label class="label-mini mb-2">Konteks Masalah:</label>
                         <div class="answer-box">
                             <div class="content-text">{{ $session->f1_context }}</div>
                         </div>
                     </div>
 
                     <div class="mb-4 px-2">
-                        <label class="label-mini mb-2 d-block text-indigo">Tujuan Pembelajaran:</label>
+                        <label class="label-mini mb-2">Tujuan Pembelajaran:</label>
                         <div class="row g-2">
                             @forelse($session->f1_learning_objectives ?? [] as $outcome)
                                 <div class="col-md-6">
                                     <div class="bg-indigo-subtle p-3 h-100 shadow-sm" style="border-radius: 12px; border-left: 4px solid #5c60f5;">
-                                        <div class="content-text small fw-semibold">{{ $outcome }}</div>
+                                        <div class="content-text">{{ $outcome }}</div>
                                     </div>
                                 </div>
                             @empty
@@ -159,8 +178,8 @@
                     </div>
 
                     <div class="px-2 mt-4 pt-3 border-top">
-                        <label class="label-mini mb-2 d-block text-indigo">Anggota Kelompok:</label>
-                        <div class="d-flex flex-wrap gap-2">
+                        <label class="label-mini mb-2">Anggota Kelompok:</label>
+                        <div class="content-text d-flex flex-wrap gap-2">
                             @php
                                 $members = is_array($group->student_data) ? ($group->student_data['members'] ?? $group->student_data) : json_decode($group->student_data, true);
                             @endphp
@@ -174,14 +193,14 @@
                 <div class="card card-eval p-4 mb-4">
                     <div class="phase-header">
                         <div class="icon-box"><i class="bi bi-card-checklist"></i></div>
-                        <h5 class="phase-title m-0">FASE 3: PENYELIDIKAN</h5>
+                        <h5 class="phase-title m-0">PENYELIDIKAN</h5>
                     </div>
                     @foreach($session->f3_questions ?? [] as $index => $q)
                         <div class="mb-4 px-2">
                             <div class="question-text mb-2">{{ $index + 1 }}. {{ $q }}</div>
                             <div class="answer-box">
-                                <small class="label-mini d-block mb-2">Jawaban Kelompok:</small>
-                                <div class="content-text small">{{ $group->f3_answers[$index] ?? 'Kosong.' }}</div>
+                                <span class="label-mini d-block mb-2">Jawaban Kelompok:</span>
+                                <div class="content-text">{{ $group->f3_answers[$index] ?? 'Kosong.' }}</div>
                             </div>
                         </div>
                     @endforeach
@@ -190,12 +209,12 @@
                 <div class="card card-eval p-4 mb-4 border-0 shadow-sm" style="border-radius: 20px;">
                     <div class="phase-header mb-4">
                         <div class="icon-box"><i class="bi bi-code-slash"></i></div>
-                        <h5 class="phase-title m-0">FASE 4: MENGEMBANGKAN & MENYAJIKAN SOLUSI</h5>
+                        <h5 class="phase-title m-0">MENGEMBANGKAN & MENYAJIKAN SOLUSI</h5>
                     </div>
 
                     <div class="bg-light p-3 mb-0 d-flex align-items-start gap-3" style="border-radius: 15px; border-left: 4px solid #5c60f5;">
                         <i class="bi bi-info-circle text-indigo mt-1"></i>
-                        <div class="small text-muted">
+                        <div class="text-muted">
                             Guru dapat memodifikasi kode untuk pengujian. Perubahan bersifat sementara dan tidak mengubah jawaban asli siswa. Gunakan tombol <strong>Reset Kode</strong> untuk mengembalikan.
                         </div>
                     </div>
@@ -240,9 +259,9 @@
                                 {{ $session->f4_question ?? 'Jelaskan bagaimana sistem yang Anda buat bekerja.' }}
                             </div>
                             
-                            <div class="answer-box shadow-sm" style="background: #fcfdfe; border: 1px solid #eef0ff;">
+                            <div class="answer-box">
                                 <small class="label-mini d-block mb-2 text-muted">Jawaban Deskripsi Siswa:</small>
-                                <div class="content-text small">{{ $group->f4_answers ?? 'Siswa tidak memberikan penjelasan.' }}</div>
+                                <div class="content-text">{{ $group->f4_answers ?? 'Siswa tidak memberikan penjelasan.' }}</div>
                             </div>
                         </div>
                     </div>
@@ -251,14 +270,14 @@
                 <div class="card card-eval p-4 mb-4">
                     <div class="phase-header">
                         <div class="icon-box"><i class="bi bi-chat-dots-fill"></i></div>
-                        <h5 class="phase-title m-0">FASE 5: REFLEKSI</h5>
+                        <h5 class="phase-title m-0">EVALUASI</h5>
                     </div>
                     @foreach($session->f5_questions ?? [] as $index => $r)
                         <div class="mb-4 px-2">
                             <div class="question-text mb-2">{{ $r }}</div>
                             <div class="answer-box">
                                 <small class="label-mini d-block mb-2">Refleksi Kelompok:</small>
-                                <div class="content-text small">{{ $group->f5_answers[$index] ?? 'Kosong.' }}</div>
+                                <div class="content-text">{{ $group->f5_answers[$index] ?? 'Kosong.' }}</div>
                             </div>
                         </div>
                     @endforeach
@@ -268,8 +287,8 @@
             <div class="col-lg-4">
                 <div class="sticky-panel card card-eval p-4 shadow-lg border-0">
                     <div class="text-center mb-4 pb-3 border-bottom">
-                        <h6 class="fw-bold text-dark mb-1">Evaluasi Guru</h6>
-                        <p class="text-muted small mb-0">{{ $group->group_name }}</p>
+                        <h6 class="mb-1" style="font-size: 1rem; font-weight:700;" >EVALUASI GURU</h6>
+                        <p class="mb-0">{{ $group->group_name }}</p>
                     </div>
 
                     <form action="{{ route('groups.evaluate', $group->id) }}" method="POST">
@@ -288,12 +307,12 @@
                         <div class="mb-4">
                             <label class="label-mini d-block mb-2">Umpan Balik</label>
                             <textarea name="feedback_comment" class="form-control bg-light border-0 p-3" 
-                                rows="6" style="border-radius: 18px; font-size: 0.9rem;"
+                                rows="6" style="border-radius: 18px; font-size: 1rem;"
                                 placeholder="Tulis feedback..." required>{{ $group->evaluation->feedback_comment ?? '' }}</textarea>
                         </div>
 
-                        <button type="submit" class="btn bg-indigo text-white w-100 py-3 fw-bold shadow-sm hover-lift" style="border-radius: 15px;">
-                            SIMPAN UMPAN BALIK
+                        <button type="submit" class="btn bg-indigo  text-white w-100 py-3 fw-bold shadow-lg mb-3" style="border-radius: 15px; font-size: 0.9rem;";">
+                            SIMPAN DAN PERBARUI UMPAN BALIK
                         </button>
                     </form>
                 </div>

@@ -33,7 +33,7 @@
         </style>
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
+        <div class="min-h-screen" style="background-color: #e0e7ff">
             <div class="force-pinned-nav">
                 @include('layouts.navigation')
             </div>

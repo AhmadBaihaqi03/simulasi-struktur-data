@@ -17,6 +17,17 @@
     <div class="container mx-auto py-8 px-4 max-w-7xl">
         <form action="{{ route('student.save.all', [$session->session_code, $group->id]) }}" method="POST">
             @csrf
+            @if(session('error'))
+            <div id="notification-alert" class="mb-6 flex items-center gap-4 p-4 bg-red-50 border-2 border-red-100 rounded-2xl animate-in fade-in slide-in-from-top-4 duration-500">
+                <div class="flex-shrink-0 w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-200">
+                    <i data-lucide="alert-circle" class="text-white w-6 h-6"></i>
+                </div>
+                <div>
+                    <h4 class="text-red-900 font-bold text-sm uppercase tracking-wider">Gagal Menyimpan!</h4>
+                    <p class="text-red-600 text-sm font-medium">{{ session('error') }}</p>
+                </div>
+            </div>
+            @endif
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div class="lg:col-span-8 space-y-8">
                     
@@ -190,19 +201,50 @@
 
 @section('scripts')
     <script>
+        // untuk menghapus notifikasi otomatis
+        document.addEventListener('DOMContentLoaded', function() {
+            const alert = document.getElementById('notification-alert');
+            if (alert) {
+                // Notifikasi akan hilang otomatis setelah 5 detik
+                setTimeout(() => {
+                    dismissAlert();
+                }, 5000);
+            }
+        });
+
+        function dismissAlert() {
+            const alert = document.getElementById('notification-alert');
+            if (alert) {
+                // Animasi halus sebelum dihapus
+                alert.style.transition = "all 0.6s ease";
+                alert.style.opacity = "0";
+                alert.style.transform = "translateY(-20px)";
+                
+                setTimeout(() => {
+                    alert.remove();
+                }, 600);
+            }
+        }
+
+        // Variabel untuk menampung timer agar tidak terlalu sering menembak database (Debounce)
+        let nameTimer;
+
         // 1. FUNGSI TAMBAH ANGGOTA (Disesuaikan dengan Tailwind & Lucide)
         document.getElementById('add-member').addEventListener('click', function() {
             const container = document.getElementById('members-container');
             const newItem = document.createElement('div');
             
-            newItem.className = 'flex items-center gap-3 member-item group animate-in fade-in slide-in-from-top-1 duration-300'; 
+            // Mengubah struktur sedikit menjadi col agar pesan error muncul rapi di bawah input
+            newItem.className = 'flex flex-col gap-1 member-item group animate-in fade-in slide-in-from-top-1 duration-300'; 
             newItem.innerHTML = `
-                <input type="text" name="members[]" 
-                    class="flex-1 px-6 py-4 bg-slate-50 border border-slate-100 rounded-xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 transition-all outline-none font-bold text-slate-700"
-                    placeholder="Nama Anggota" required> 
-                <button type="button" class="remove-member p-3 text-slate-300 hover:text-red-500 transition-colors">
-                    <i data-lucide="trash-2" class="w-5 h-5"></i>
-                </button>`;
+                <div class="flex items-center gap-3">
+                    <input type="text" name="members[]" 
+                        class="flex-1 px-6 py-4 bg-slate-50 border border-slate-100 rounded-xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 transition-all outline-none font-bold text-slate-700"
+                        placeholder="Nama Anggota" required> 
+                    <button type="button" class="remove-member p-3 text-slate-300 hover:text-red-500 transition-colors">
+                        <i data-lucide="trash-2" class="w-5 h-5"></i>
+                    </button>
+                </div>`;
             
             container.appendChild(newItem);
             
@@ -213,7 +255,6 @@
 
         // 2. FUNGSI HAPUS ANGGOTA
         document.addEventListener('click', function(e) {
-            // Mencari button remove-member terdekat dari elemen yang diklik
             const removeBtn = e.target.closest('.remove-member');
             if (removeBtn) {
                 const items = document.querySelectorAll('.member-item');
@@ -225,55 +266,83 @@
             }
         });
 
-        // 3. FUNGSI RUN C CODE
-        async function runPythonCode() {
-        const editor = document.getElementById('codeEditor');
-        const outputArea = document.getElementById('outputArea');
-        const btn = document.getElementById('runBtn');
-        
-        // 1. Ambil nilai dari textarea
-        const codeValue = editor.value;
+        // VALIDATION NAMA KELOMPOK
+        document.addEventListener('input', function(e) {
+            if (e.target.name === 'members[]') {
+                clearTimeout(nameTimer);
+                const input = e.target;
+                const name = input.value.trim();
+                
+                // Reset state visual setiap kali mengetik
+                input.classList.remove('border-red-500', 'bg-red-50', 'text-red-600');
+                const existingError = input.closest('.member-item').querySelector('.error-msg');
+                if (existingError) existingError.remove();
 
-        // Animasi Loading
-        btn.disabled = true;
-        btn.innerHTML = `
-            <svg class="animate-spin h-4 w-4 text-white inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg> MENJALANKAN...`;
+                if (name.length < 3) return; // Minimal 3 huruf baru cek ke server
 
-        outputArea.innerText = "> Processing...";
-        outputArea.style.color = "#fbbf24"; // Warna Amber/Kuning (Processing)
+                nameTimer = setTimeout(async () => {
+                    try {
+                        const response = await fetch('{{ route("student.check.name") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ 
+                                name: name,
+                                group_id: '{{ $group->id }}' 
+                            })
+                        });
+                        const data = await response.json();
 
-        try {
-            // Ganti URL '/run-python' jika route kamu berbeda
-            const response = await fetch('/run-python', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ code: codeValue })
-            });
-
-            const data = await response.json();
-
-            // Tampilkan hasil
-            if (data.error) {
-                outputArea.style.color = "#f87171"; // Warna Merah (Error)
-                outputArea.innerText = "ERROR:\n" + data.error + (data.output ? "\n" + data.output : "");
-            } else {
-                outputArea.style.color = "#34d399"; // Warna Emerald (Success)
-                outputArea.innerText = data.output || "> Program selesai tanpa output.";
+                        if (data.exists) {
+                            input.classList.add('border-red-500', 'bg-red-50', 'text-red-600');
+                            const msg = document.createElement('span');
+                            msg.className = 'error-msg text-[9px] text-red-500 font-bold uppercase ml-4 tracking-widest animate-pulse';
+                            msg.innerText = '⚠️ Nama sudah terdaftar di sistem!';
+                            input.closest('.member-item').appendChild(msg);
+                        }
+                    } catch (err) {
+                        console.error("Gagal validasi nama:", err);
+                    }
+                }, 700); // Tunggu 0.7 detik setelah berhenti mengetik
             }
+        });
 
+        // 3. FUNGSI RUN PYTHON CODE (Tetap)
+        async function runPythonCode() {
+            const editor = document.getElementById('codeEditor');
+            const outputArea = document.getElementById('outputArea');
+            const btn = document.getElementById('runBtn');
+            const codeValue = editor.value;
+
+            btn.disabled = true;
+            btn.innerHTML = `<svg class="animate-spin h-4 w-4 text-white inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> MENJALANKAN...`;
+            outputArea.innerText = "> Processing...";
+            outputArea.style.color = "#fbbf24";
+
+            try {
+                const response = await fetch('/run-python', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ code: codeValue })
+                });
+                const data = await response.json();
+                if (data.error) {
+                    outputArea.style.color = "#f87171";
+                    outputArea.innerText = "ERROR:\n" + data.error + (data.output ? "\n" + data.output : "");
+                } else {
+                    outputArea.style.color = "#34d399";
+                    outputArea.innerText = data.output || "> Program selesai tanpa output.";
+                }
             } catch (e) {
                 outputArea.style.color = "#f87171";
                 outputArea.innerText = "FATAL ERROR: Gagal terhubung ke server eksekusi.";
-                console.error(e);
             } finally {
-                // Kembalikan Tombol
                 btn.disabled = false;
                 btn.innerHTML = '<i data-lucide="play" class="inline-block w-4 h-4 mr-2 fill-current"></i> JALANKAN PROGRAM';
                 if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -282,6 +351,14 @@
 
         // 4. VALIDASI SUBMIT
         document.getElementById('submitBtn').addEventListener('click', function(e) {
+            // Cek apakah masih ada error nama ganda
+            const hasNameError = document.querySelector('.error-msg');
+            if (hasNameError) {
+                e.preventDefault();
+                alert('Terdapat nama anggota yang sudah terdaftar di sistem. Harap perbaiki sebelum mengirim.');
+                return;
+            }
+
             const textareas = document.querySelectorAll('textarea');
             let allFilled = true;
 
